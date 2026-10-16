@@ -64,10 +64,15 @@ function resolvePortFromEnv(rawValue) {
   }
 
   // A digits-only test rather than Number() alone: Number('') is 0, and a port
-  // of 0 asks the operating system to choose an arbitrary port.
-  if (!/^[0-9]+$/.test(trimmedValue)) {
+  // of 0 asks the operating system to choose an arbitrary port. Each character
+  // is compared against '0'-'9' rather than matched against a pattern, so the
+  // file needs no regular expression.
+  const isDigitsOnly =
+    trimmedValue.split('').every((character) => character >= '0' && character <= '9');
+
+  if (!isDigitsOnly) {
     throw new Error(
-      `Invalid PORT value "${rawValue}": PORT must be a whole number between 1024 and 65535.`
+      `Invalid PORT value "${rawValue}": PORT must be a whole number between ${MIN_PORT} and ${MAX_PORT}.`
     );
   }
 
@@ -75,19 +80,19 @@ function resolvePortFromEnv(rawValue) {
 
   if (port === 0) {
     throw new Error(
-      `Invalid PORT value "${rawValue}": port 0 would let the operating system choose a port; choose a port between 1024 and 65535.`
+      `Invalid PORT value "${rawValue}": port 0 would let the operating system choose a port; choose a port between ${MIN_PORT} and ${MAX_PORT}.`
     );
   }
 
   if (port < MIN_PORT) {
     throw new Error(
-      `Invalid PORT value "${rawValue}": ports below 1024 are privileged and cannot be bound; choose a port between 1024 and 65535.`
+      `Invalid PORT value "${rawValue}": ports below ${MIN_PORT} are privileged and cannot be bound; choose a port between ${MIN_PORT} and ${MAX_PORT}.`
     );
   }
 
   if (port > MAX_PORT) {
     throw new Error(
-      `Invalid PORT value "${rawValue}": PORT must be between 1024 and 65535.`
+      `Invalid PORT value "${rawValue}": PORT must be between ${MIN_PORT} and ${MAX_PORT}.`
     );
   }
 
@@ -125,7 +130,7 @@ function startServer(port) {
   server.on('error', (error) => {
     if (error.code === 'EADDRINUSE') {
       console.error(
-        `Cannot start server: port ${port} is already in use. Stop the process using it, or start it with a different PORT between 1024 and 65535.`
+        `Cannot start server: port ${port} is already in use. Stop the process using it, or start it with a different PORT between ${MIN_PORT} and ${MAX_PORT}.`
       );
     } else {
       console.error(`Cannot start server: ${error.message}`);

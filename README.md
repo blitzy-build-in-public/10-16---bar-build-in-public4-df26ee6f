@@ -23,6 +23,13 @@ Node.js 18.0.0 or newer is required. Check the version you have:
 node --version
 ```
 
+```text
+v22.23.3
+```
+
+The number printed depends on the machine you run it on, so compare yours with the floor: any
+version from 18.0.0 upwards is acceptable.
+
 The floor is declared in `package.json` as `engines.node: ">=18.0.0"`. npm treats `engines` as
 advisory, so that field documents the intended floor rather than enforcing it.
 
@@ -54,15 +61,15 @@ Or through the npm start script:
 npm start
 ```
 
-`npm start` resolves to `scripts.start` in `package.json`, which is `node server.js`, so the two
-commands do the same thing and neither needs an installed package.
-
 The startup line is printed only after the socket has been bound successfully, so seeing it means
 the server is listening. With no `PORT` set, the output is:
 
 ```text
 Server listening on port 3000
 ```
+
+`npm start` resolves to `scripts.start` in `package.json`, which is `node server.js`, so the two
+commands do the same thing and neither needs an installed package.
 
 The server stays in the foreground and writes its log lines to the terminal. Press `CTRL+C` to stop
 it; the Stopping the server section below shows what that prints.
@@ -79,6 +86,18 @@ startup, before the socket is bound, and never read again.
 | A whole decimal number from `1024` to `65535` inclusive | Binds that port |
 | Anything else | Writes an actionable message to stderr and exits with status `1`, binding nothing |
 
+```bash
+PORT= node server.js
+```
+
+```text
+Server listening on port 3000
+```
+
+An empty value is treated as unset even though the variable is present, so `PORT=` binds the
+default port `3000` and never port `0`, which would ask the operating system to choose an arbitrary
+port.
+
 Ports below `1024` are privileged ports and are always refused. There is no override flag, no second
 environment variable and no configuration file that can allow them; the refusal is behaviour you
 can rely on.
@@ -93,6 +112,31 @@ PORT=4000 node server.js
 Server listening on port 4000
 ```
 
+```bash
+curl -i http://localhost:4000/hello
+```
+
+```text
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Content-Length: 11
+
+Hello world
+```
+
+```bash
+curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/hello
+```
+
+```text
+000
+```
+
+The override replaces the default rather than adding to it, `000` is what `curl` reports when it
+cannot make a connection, and the transcript above quotes the headers the application sets while the
+runtime adds `Date`, `Connection` and `Keep-Alive`; the Testing the server section shows a full
+`curl -i` transcript.
+
 A value that is not a whole decimal number is rejected, quoting the offending value back:
 
 ```bash
@@ -104,6 +148,14 @@ Invalid PORT value "abc": PORT must be a whole number between 1024 and 65535.
 ```
 
 The other rejected shapes use the same style, each naming the value and stating what is acceptable:
+
+```bash
+PORT=3.5 node server.js
+```
+
+```text
+Invalid PORT value "3.5": PORT must be a whole number between 1024 and 65535.
+```
 
 ```bash
 PORT=0 node server.js
@@ -299,6 +351,27 @@ The repository is three files:
 | `package.json` | Project identity, the `npm start` command and the runtime floor. It carries seven fields, `name`, `version`, `description`, `main`, `scripts`, `engines`, `keywords`, and no dependency section |
 | `README.md` | This document |
 
+The manifest can be inspected from the shell with no tooling at all:
+
+```bash
+node -e "const p=require('./package.json');console.log(Object.keys(p).join(','))"
+```
+
+```text
+name,version,description,main,scripts,engines,keywords
+```
+
+```bash
+node -e "const p=require('./package.json');console.log(p.name,p.version,p.description,p.main,p.scripts.start,p.engines.node,p.keywords.join(','))"
+```
+
+```text
+nodejs-tutorial-hello-world 1.0.0 Minimal Node.js HTTP server tutorial demonstrating single endpoint implementation server.js node server.js >=18.0.0 nodejs,tutorial,http,server,beginner
+```
+
+The first command prints the seven field names, so an eighth key or a dependency section would be
+visible in the list; the second prints their values.
+
 The request path performs no disk, network or database work: it derives a string, looks up one table
 entry and ends the response. `GET /hello` therefore answers in well under 10 ms. You can spot-check
 it from the shell; `curl` prints the total time in seconds, so a passing value is below `0.010`:
@@ -342,4 +415,43 @@ for i in $(seq 1 20); do curl -s -o /dev/null -w '%{time_total}\n' http://localh
 0.000322
 0.000341
 ```
+
+Concurrent requests are all served: fifty requests issued at once each come back with the body, and
+the server answers a further request immediately afterwards.
+
+```bash
+seq 1 50 | xargs -P 50 -I{} curl -s http://localhost:3000/hello | grep -o 'Hello world' | wc -l
+```
+
+```text
+50
+```
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:3000/hello
+```
+
+```text
+200
+```
+
+All fifty concurrent requests were answered with the body and none was refused, and the follow-up
+request still returns `200`.
+
+Memory does not grow with the request count, so the process stays at a stable size however long it
+serves:
+
+```bash
+node server.js & SRV=$!; sleep 1; for i in $(seq 1 100); do curl -s -o /dev/null http://localhost:3000/hello; done; BEFORE=$(ps -o rss= -p $SRV); for i in $(seq 1 1000); do curl -s -o /dev/null http://localhost:3000/hello; done; MID=$(ps -o rss= -p $SRV); for i in $(seq 1 1000); do curl -s -o /dev/null http://localhost:3000/hello; done; AFTER=$(ps -o rss= -p $SRV); echo "$BEFORE $MID $AFTER"; kill -INT $SRV
+```
+
+```text
+Server listening on port 3000
+56724 58952 58876
+Server shutting down
+```
+
+The three numbers are the resident set size of the server process in 1024-byte units, sampled after
+a short warm-up and then after each of two rounds of a thousand requests; the values differ from one
+machine to the next, and the check is that they do not rise with the request count.
 
