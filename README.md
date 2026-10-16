@@ -62,14 +62,27 @@ npm start
 ```
 
 The startup line is printed only after the socket has been bound successfully, so seeing it means
-the server is listening. With no `PORT` set, the output is:
+the server is listening. With no `PORT` set, `node server.js` prints:
 
 ```text
 Server listening on port 3000
 ```
 
-`npm start` resolves to `scripts.start` in `package.json`, which is `node server.js`, so the two
-commands do the same thing and neither needs an installed package.
+`npm start` prints that line too, but npm writes its own script banner above it: the package name
+and version with the script being run, then the command that script runs. Those lines come from npm
+rather than from the server, and a blank line separates them from the server's own output:
+
+```text
+
+> nodejs-tutorial-hello-world@1.0.0 start
+> node server.js
+
+Server listening on port 3000
+```
+
+`Server listening on port 3000` is the server's own line within that output. `npm start` resolves to
+`scripts.start` in `package.json`, which is `node server.js`, so the two commands do the same thing
+and neither needs an installed package.
 
 The server stays in the foreground and writes its log lines to the terminal. Press `CTRL+C` to stop
 it; the Stopping the server section below shows what that prints.
@@ -84,6 +97,7 @@ startup, before the socket is bound, and never read again.
 | Not set | Binds port `3000` |
 | Empty or whitespace only, such as `PORT=` | Binds port `3000`; an empty value is treated as unset, so `PORT=` does not silently bind port `0` |
 | A whole decimal number from `1024` to `65535` inclusive | Binds that port |
+| A whole decimal number surrounded by whitespace, such as `PORT=" 4000 "` | Trims the surrounding whitespace and binds port `4000` |
 | Anything else | Writes an actionable message to stderr and exits with status `1`, binding nothing |
 
 ```bash
@@ -132,10 +146,12 @@ curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/hello
 000
 ```
 
-The override replaces the default rather than adding to it, `000` is what `curl` reports when it
-cannot make a connection, and the transcript above quotes the headers the application sets while the
-runtime adds `Date`, `Connection` and `Keep-Alive`; the Testing the server section shows a full
-`curl -i` transcript.
+The override replaces the default rather than adding to it, so while the server runs on `4000`
+nothing answers on `3000` and that command reports `000`, the value `%{http_code}` gives when
+`curl` cannot make a connection. It exits with a non-zero status (`7`) and prints nothing else,
+because `-s` suppresses curl's error message; add `-S` if you want that failure line too. The
+transcript above quotes the headers the application sets while the runtime adds `Date`, `Connection`
+and `Keep-Alive`; the Testing the server section shows a full `curl -i` transcript.
 
 A value that is not a whole decimal number is rejected, quoting the offending value back:
 
@@ -194,7 +210,12 @@ exit=1
 ```
 
 If the port value is valid but the port is already in use, the bind failure is reported instead of
-crashing with a raw Node.js error dump:
+crashing with a raw Node.js error dump. Start a second instance while the first one holds the port;
+with the first instance on the default `3000`, that second start is:
+
+```bash
+PORT=3000 node server.js
+```
 
 ```text
 Cannot start server: port 3000 is already in use. Stop the process using it, or start it with a different PORT between 1024 and 65535.
@@ -231,9 +252,9 @@ Content-Length: 11
 Hello world
 ```
 
-The status line, `Content-Type` and the body come from the application. `Content-Length`, `Date`,
-`Connection` and `Keep-Alive` are added by the Node.js runtime; `Content-Length: 11` is the length
-of `Hello world`.
+The status code, `Content-Type` and the body come from the application; the Node.js runtime renders
+the `HTTP/1.1 200 OK` status line from that code. `Content-Length`, `Date`, `Connection` and
+`Keep-Alive` are added by the Node.js runtime; `Content-Length: 11` is the length of `Hello world`.
 
 Any other path is a `404`:
 
