@@ -1,7 +1,5 @@
 # 1. Executive Summary
 
-A single-file, zero-dependency Node.js HTTP server built as a teaching reference for the built-in `http` module. It serves `GET /hello` with `200`, `text/plain` and `Hello world`; answers every other method-and-path combination with `404`, `text/plain`, `Not Found`; logs one line per request; takes its port from `PORT` (default `3000`, range `1024`–`65535`); reports configuration and bind failures actionably with a non-zero exit; and stops cleanly on `CTRL+C` with status `0`. Readers are beginner Node.js developers and instructors. Scope is exactly `server.js`, `package.json` and `README.md`.
-
 ## 1.1 Project Overview
 
 The product, its users and its boundaries:
@@ -18,38 +16,39 @@ The product, its users and its boundaries:
 
 ```mermaid
 %%{init: {"themeVariables": {"pie1": "#5B39F3", "pie2": "#FFFFFF", "pieStrokeColor": "#B23AF2", "pieOuterStrokeColor": "#B23AF2", "pieTitleTextColor": "#B23AF2"}}}%%
-pie title Project Hours Breakdown — 87.0% complete
-    "Completed Work" : 40
-    "Remaining Work" : 6
+pie title Project Hours Breakdown — 91.3% complete
+    "Completed Work" : 42
+    "Remaining Work" : 4
 ```
 
 | Metric | Hours |
 | --- | --- |
 | Total Hours | 46 |
-| Completed Hours (AI + Manual) | 40 |
-| Remaining Hours | 6 |
+| Completed Hours (AI + Manual) | 42 |
+| Remaining Hours | 4 |
 
-Completion is hours-based and scoped to the agreed work: **40 ÷ (40 + 6) × 100 = 87.0%**. The build is functionally complete; the 6 remaining hours are documentation completeness and two verifications that have not yet been taken.
+Completion is hours-based and scoped to the agreed work: **42 ÷ (42 + 4) × 100 = 91.3%**. The build is functionally complete and every agreed acceptance check has been exercised against a running instance; the 4 remaining hours are two verifications that have not been taken and a refresh of the document's quoted measurement samples.
 
 ## 1.3 Key Accomplishments
 
 - `GET /hello` answers `200`, `text/plain`, `Content-Length: 11`, body `Hello world`.
 - Every other method-and-path pair answers `404` with `Not Found`; `POST /hello` and `HEAD /hello` are misses, not matches.
-- One `<ISO-8601 Z> <METHOD> <path>` log line per request, emitted before routing decides anything.
-- `PORT` read once: default `3000`, empty treated as unset, `1024`–`65535` accepted.
-- Invalid and privileged ports refused with actionable stderr text and exit 1; a port in use reported with the remedy, leaving the incumbent serving.
+- One `<ISO-8601 Z> <METHOD> <path>` line per request, emitted before routing decides anything.
+- `PORT` read once: default `3000`, empty treated as unset, `1024`–`65535` accepted, nine invalid shapes refused with actionable text and exit 1.
+- A port already in use is reported with the exact remedy and exit 1, leaving the incumbent instance serving.
 - `CTRL+C` prints `Server shutting down`, releases connections and exits 0, even with an idle keep-alive connection held.
-- Zero third-party dependencies: one built-in require; `npm start` runs with nothing installed.
-- No dynamic evaluation, file-system access, outbound request, persistence or internal detail in responses.
+- Zero third-party dependencies: one built-in require; `npm start` runs on a host where nothing was ever installed.
+- No dynamic evaluation, file-system access, outbound request or persistence — and every acceptance check is documented in the README with the result it produces.
 
 ## 1.4 Critical Unresolved Issues
 
-**2 of the 15 in-scope items carry something still open** — both are verification and documentation completeness, and neither blocks release.
+**3 of the 15 agreed gates carry a residual** — all three are verification or measurement, and none blocks release.
 
 | Issue | Impact | Owner | ETA |
 | --- | --- | --- | --- |
-| Acceptance verification: the declared runtime floor (Node 18.0.0) has never been executed — every run was on a newer line — and the generic `Cannot start server: <error.message>` listen-error branch has no natural runtime trigger (1 of 15 items) | The floor and that branch rest on static reasoning plus behaviour observed on a newer runtime, not on an observation of their own | Development | 3h |
-| Documentation completeness: the three supporting checks (`node --check server.js`, the placeholder grep, the zero-dependency greps) are not documented, two attribution clauses beside quoted transcripts are incomplete, and the quoted latency and memory samples want refreshing on a quiet host (1 of 15 items) | A reader cannot reproduce those three checks from the document, must read two paragraphs together for the complete header attribution, and sees samples taken on a busy host | Development | 3h |
+| The reader gate: the declared runtime floor (`engines.node: ">=18.0.0"`) has never been executed — every run was on a newer line (1 of 15) | The floor rests on the API surface plus behaviour observed on a newer runtime, not on an observation of its own | Development | 2h |
+| The error-handling obligation behind the configuration and bind gates: the generic `Cannot start server: <error.message>` branch has no natural trigger and has never been observed (1 of 15) | A non-`EADDRINUSE` listen failure is implemented but unproven | Development | 1h |
+| The performance gates: the quoted latency and resident-set samples were measured on one host and have not been re-taken here (1 of 15) | A reader comparing their own numbers sees different figures — the document states which parts vary and why | Development | 1h |
 
 ## 1.5 Access Issues
 
@@ -60,8 +59,7 @@ No access issues identified. The project needs no credential, service, database,
 1. **[High]** Record the deployment context: the listener binds every interface, with no authentication, TLS or rate limiting by design.
 2. **[Medium]** Execute the declared Node 18.0.0 floor line and re-run the acceptance checks on it.
 3. **[Medium]** Exercise the generic listen-error path and record its message and exit status.
-4. **[Low]** Document the three supporting checks and close the two attribution clauses in the README.
-5. **[Low]** Refresh the README's quoted latency and memory samples on an idle host.
+4. **[Low]** Refresh the README's quoted latency and resident-set samples on an idle host.
 
 # 2. Project Hours Breakdown
 
@@ -70,47 +68,46 @@ No access issues identified. The project needs no credential, service, database,
 | Component | Hours | Description |
 | --- | --- | --- |
 | Application core | 8 | `server.js`: the frozen route table with its single `GET /hello` entry, both handlers, the single response writer that sets status, `Content-Type` and one `end()` call, request logging, and the path derivation that strips a query string and leaves percent-encoding undecoded |
-| Configuration and failure paths | 5 | Port resolution and validation in `resolvePortFromEnv`: default `3000`, empty/whitespace treated as unset, trimming, the `1024`–`65535` range, the four anchored refusal messages derived from `MIN_PORT`/`MAX_PORT`, the startup error listener, and exit status 1 on every fatal path |
+| Configuration and failure paths | 5 | Port resolution and validation in `resolvePortFromEnv`: default `3000`, empty/whitespace treated as unset, trimming, the `1024`–`65535` range, the four anchored refusal messages, the startup error listener, and exit status 1 on every fatal path |
 | Process lifecycle | 3 | The `SIGINT` handler: the `Server shutting down` line, `server.close()`, the tracked-socket teardown that makes the exit deterministic at the declared runtime floor, and exit status 0 |
 | Package manifest | 1 | `package.json` with exactly the seven agreed fields at their agreed values, the `npm start` wiring and the advisory `engines.node` floor; no dependency section |
-| Documentation | 8 | `README.md`'s ten sections in reading order: purpose, prerequisites, installation, running, configuration, testing, expected output, request logging, stopping, project structure and latency check — every command complete with the output it produces, and every quoted message byte-identical to what the code emits |
-| Acceptance verification on the running application | 12 | The full gate set exercised against live instances: both response contracts, method and path matrices, query-string and percent-encoding behaviour, request-log shape and order, port override, empty-value fallback, accepted bounds, refused values, duplicate bind, shutdown status, `npm start`, manifest reads, the static and boundary greps, the latency series, the 50-way concurrency burst, the memory samples, hostile-payload and raw-socket probes, and the browser-rendered checks of both bodies |
-| Integration and whole-package re-verification | 3 | Build check, seams checks across the three deliverables, integration smoke tests through the running application, and the regression sweep re-run after the later documentation changes |
-| **Total** | **40** | Equals the Completed Hours in Section 1.2 |
+| Documentation | 10 | `README.md`'s ten sections in reading order — purpose, prerequisites, installation, running, configuration, testing, expected output, request logging, stopping, project structure and verification evidence — every command complete with the output it produces and an attribution clause naming what varies, including the syntax, placeholder, zero-dependency and boundary checks that reproduce the acceptance evidence |
+| Acceptance verification on the running application | 12 | The full gate set exercised against live instances: both response contracts, method and path matrices, query-string and percent-encoding behaviour, request-log shape and order, the port gate including both accepted bounds and nine refused shapes, duplicate bind, shutdown status, `npm start`, manifest reads, the static and boundary greps, the latency series, the 50-way concurrency burst, the memory samples, hostile-payload and raw-socket probes, and the browser-rendered checks of both bodies |
+| Integration and whole-package re-verification | 3 | Build check, seams checks across the three deliverables, integration smoke tests through the running application, and the regression sweep re-run after the documentation additions |
+| **Total** | **42** | Equals the Completed Hours in Section 1.2 |
 
 ## 2.2 Remaining Work Detail
 
 | Category | Hours | Priority |
 | --- | --- | --- |
 | Runtime floor verification — execute the declared Node 18.0.0 line and re-run the acceptance gate set on it, recording the startup line, both contracts, the port-gate messages and the shutdown status | 2.0 | Medium |
-| Failure-path verification — exercise the generic `Cannot start server: <error.message>` branch under controlled conditions and record the message and exit status | 1.0 | Medium |
-| Documentation — add the three supporting checks (`node --check server.js`, the placeholder grep, the zero-dependency greps) so the acceptance evidence is reproducible from the document | 1.0 | Low |
-| Documentation — name the Node.js runtime as the source of `Content-Length` beside the quoted transcript, and add a stop-first note before the self-contained commands | 1.0 | Low |
+| Failure-path verification — induce a listen error other than a port already in use and record the message and exit status of the generic `Cannot start server: <error.message>` branch | 1.0 | Medium |
 | Measurement refresh — re-take the README's quoted latency and resident-set samples on an idle host and update the figures if they differ materially | 1.0 | Low |
-| **Total** | **6.0** | Equals the Remaining Hours in Section 1.2 and the `Remaining Work` value in Section 7 |
+| **Total** | **4.0** | Equals the Remaining Hours in Section 1.2 and the `Remaining Work` value in Section 7 |
 
 # 3. Test Results
 
-The project ships no automated test suite: the agreed deliverable is exactly three files and the acceptance evidence is a command set, which is what was executed here against live instances of the finished server on Node v22.23.3. **87 checks executed — 83 terminal command checks and 4 browser assertions — 87 passed, 0 failed.** Coverage is not instrumented anywhere, because no coverage tooling exists in the project.
+The project ships no automated test suite: the agreed deliverable is exactly three files and the acceptance evidence is a command set, which is what was executed here against live instances of the finished server on Node v22.23.3. **85 checks executed — 81 command checks and 4 browser assertions — 85 passed, 0 failed.** Coverage is not instrumented anywhere, because no coverage tooling exists in the project.
 
 | Area / Category | Framework | Tests | Passed | Failed | Coverage | What This Proves |
 | --- | --- | --- | --- | --- | --- | --- |
-| HTTP response contracts | Command gates (`curl`) | 12 | 12 | 0 | Not instrumented | `GET /hello` answers 200 with `text/plain`, `Content-Length: 11` and body `Hello world`; `/invalid`, `POST /hello` and `HEAD /hello` answer 404 with `Content-Length: 9` and `Not Found`; a query string still matches and a percent-encoded path does not; no response is chunk-framed |
-| Request logging | Command gates (`curl`, log inspection) | 3 | 3 | 0 | Not instrumented | Every request — matched or not — produces exactly one `<ISO-8601 Z> <METHOD> <path>` line, in arrival order, on stdout only |
-| Port configuration and validation | Command gates (`node`) | 34 | 34 | 0 | Not instrumented | Default `3000`, empty and whitespace-only treated as unset, surrounding whitespace trimmed, `1024` and `65535` accepted, and 11 invalid shapes each refused with the anchored message, nothing bound and exit 1 |
-| Bind failure and lifecycle | Command gates (`node`, `curl`, `kill -INT`) | 13 | 13 | 0 | Not instrumented | The startup line appears only after a successful bind with stderr empty; a port already in use is reported with the exact remedy and exit 1 while the incumbent keeps serving; `CTRL+C` prints `Server shutting down`, releases connections, exits 0 and frees the port |
-| Entry points and manifest | Command gates (`npm`, `node -e`) | 5 | 5 | 0 | Not instrumented | `npm start` and `node server.js` are equivalent with nothing installed, and the manifest carries exactly `name,version,description,main,scripts,engines,keywords` with the agreed values and no dependency section |
-| Performance and memory obligations | Command gates (`curl`, `seq`/`xargs`, `ps`) | 4 | 4 | 0 | Not instrumented | 20 latency samples, worst 0.000831 s; a 50-way concurrent burst returns 550 bytes of bodies with a still-answering server; resident set stays level across 2 000 requests |
-| Static integrity and closed boundaries | Command gates (`node --check`, greps) | 12 | 12 | 0 | Not instrumented | The file parses, requires only `node:http`, contains no evaluation, file-system, outbound-network or persistence capability, no regular expression, no placeholder token, and the tracked set is exactly the three deliverables |
-| Browser-rendered surface | Chrome session | 4 | 4 | 0 | Not instrumented | Both contracts render as plain text in a real browser with the contracted statuses and header sets, no `Transfer-Encoding`, and no application console error |
+| Static integrity and closed boundaries | Command checks (`node --check`, `node -e`, `npm ls`, `grep`) | 19 | 19 | 0 | Not instrumented | The file parses and the manifest parses; exactly one built-in require and no declared dependency; the tracked set is the three deliverables; no evaluation, file-system, outbound-network or export capability; the placeholder sweep's only match is the line that documents it, inside the README's verification section |
+| HTTP response contracts and routing | Command checks (`curl`) | 13 | 13 | 0 | Not instrumented | `GET /hello` answers 200 with `text/plain`, `Content-Length: 11` and the byte-counted body `Hello world`; `/invalid`, a percent-encoded path, a case variant and a trailing slash answer 404 with `Content-Length: 9` and `Not Found`; six other methods on `/hello` are misses; `/hello?x=1` still matches; neither response is chunk-framed |
+| Request logging | Command checks (`curl`, log inspection) | 4 | 4 | 0 | Not instrumented | Every request the runtime accepts — matched by the route table or not — produces exactly one `<ISO-8601 Z> <METHOD> <path>` line in arrival order; the query string never reaches the log and stderr stays empty |
+| Port configuration and validation | Command checks (`node`, `curl`) | 34 | 34 | 0 | Not instrumented | Default `3000`; empty and whitespace-only treated as unset; surrounding whitespace trimmed; an override serving on its own port with the default left unbound; `1024` and `65535` accepted and serving; nine invalid or privileged shapes each refused with the anchored message, empty stdout, exit 1 and nothing bound; the duplicate bind reported with the exact remedy while the incumbent keeps serving; `npm start` equivalent to `node server.js` with nothing installed |
+| Bind failure and lifecycle | Command checks (`node`, `kill -INT`, `curl`) | 3 | 3 | 0 | Not instrumented | The startup line appears only after a successful bind with stderr empty; `CTRL+C` prints `Server shutting down`, exits 0, releases the port, and still exits 0 after a load run |
+| Performance and memory obligations | Command checks (`curl`, `seq`/`xargs`, `ps`) | 8 | 8 | 0 | Not instrumented | 20 latency samples in six-decimal seconds, worst 0.000814 s, all below the 0.010 s bound; a 50-way concurrent burst returns 550 bytes of bodies with a still-answering server; one conforming log line per request for all 1 622 requests of the performance session; resident set 56 672 → 57 960 → 58 768 → 58 020 kB across 1 500 requests, a working level rather than growth with request count |
+| Browser-rendered surface | Chrome session | 4 | 4 | 0 | Not instrumented | Both contracts render as plain text in a real browser with the contracted statuses and header sets and matching `Content-Length` values, no `Transfer-Encoding`, and no application console error |
+| **Total** | — | **85** | **85** | **0** | — | — |
 
 **Not Covered** — what no test or runtime check exercises:
 
 - **Automated regression detection.** Nothing in the repository re-runs any of the above; a future edit to `server.js` is covered only by re-running the documented commands by hand.
-- **The declared runtime floor.** Every run was on Node v22.23.3. The file uses no API newer than 18.0.0, but the Node 18.0.0 line itself was never executed, so the floor is inferred from the API surface rather than observed.
+- **The declared runtime floor.** Every run was on Node v22.23.3. The file uses no API newer than 18.0.0 — including the deliberate avoidance of the post-18 connection helpers in the shutdown path — but the 18.0.0 line itself was never executed, so the floor is inferred from the API surface rather than observed.
 - **The generic listen-error path.** Only the port-already-in-use case has a natural trigger; the `Cannot start server: <error.message>` branch needs an induced condition and has never been observed on its own.
-- **Protocol and framing edges outside the contract.** HTTP/1.0 responses, `HEAD` without `Content-Length`, parser-level `400`/`431` answers for malformed requests, and half-open connections held to the runtime's header timeout were observed ad hoc during probing but no repeatable check asserts them.
-- **Sustained load and abuse.** The concurrency, memory and payload measurements are bounded probes; no soak test, no long-running soak, and no rate-limiting behaviour exists to test.
+- **Requests the runtime refuses before the handler.** A malformed request line, an unknown method token, an oversized target or an oversized header block is answered `400` or `431` by the HTTP parser and leaves no line in the request log, so "one line per incoming request" holds only for requests the runtime accepts.
+- **Signal windows outside the documented flow.** A `SIGINT` delivered in roughly the first 20 ms after spawn runs before any handler can exist, and `SIGTERM` is deliberately unhandled (exit 143).
+- **Protocol edges and sustained load.** HTTP/1.0 framing, `HEAD` without `Content-Length`, half-open connections held to the runtime's header timeout and IPv6 loopback were observed ad hoc, but no repeatable check asserts them; the concurrency, latency and memory figures are bounded probes, not a soak test.
 
 # 4. Runtime Validation & UI Verification
 
@@ -118,14 +115,14 @@ The server was started as a real process and driven over real TCP sockets with `
 
 - ✅ **Start-up** — `node server.js` and `npm start` each print `Server listening on port <port>` from the listen callback with zero bytes on stderr, and only after the socket is bound.
 - ✅ **`GET /hello`** — HTTP/1.1 200 OK, `Content-Type: text/plain`, `Content-Length: 11`, body `Hello world`, no `Transfer-Encoding`, over both `curl` and a browser navigation.
-- ✅ **Catch-all route** — 404 `Not Found` with `Content-Length: 9` for an unmatched path, an unmatched method (`POST /hello`, `HEAD /hello`), a percent-encoded path and a browser's `/favicon.ico` probe; `/hello?x=1` still matches `/hello`.
-- ✅ **Request logging** — one conforming `<ISO-8601 Z> <METHOD> <path>` line per request, in arrival order, before the routing decision, with nothing written to stderr.
-- ✅ **Port configuration** — default `3000`, empty and whitespace-only treated as unset, surrounding whitespace trimmed, an override serving on its own port with the default left unbound, both accepted bounds (`1024`, `65535`) serving, and 11 refused shapes each exiting 1 with the anchored message and nothing bound.
+- ✅ **Catch-all route** — 404 `Not Found` with `Content-Length: 9` for an unmatched path, an unmatched method (`POST /hello`, `HEAD /hello`), a case variant, a trailing slash and a browser's `/favicon.ico` probe; `/hello?x=1` still matches `/hello`.
+- ✅ **Request logging** — one conforming `<ISO-8601 Z> <METHOD> <path>` line per accepted request, in arrival order, before the routing decision, with nothing written to stderr and no query string ever logged.
+- ✅ **Port configuration** — default `3000`, empty and whitespace-only treated as unset, surrounding whitespace trimmed, an override serving on its own port with the default left unbound, both accepted bounds (`1024`, `65535`) serving, and nine refused shapes each exiting 1 with the anchored message and nothing bound.
 - ✅ **Bind failure** — a second instance on a held port reports the exact remedy text and exits 1 while the first instance keeps answering.
-- ✅ **Shutdown** — `CTRL+C`/`kill -INT` prints `Server shutting down`, releases the connections it holds, exits 0 and leaves the port free, including with an idle keep-alive connection held open.
-- ✅ **Performance and memory** — 20 latency samples all under 10 ms (worst 0.000831 s), a 50-way concurrent burst answered in full with a responsive follow-up, and a level resident set across 2 000 requests.
-- ✅ **Browser surface** — both bodies render correctly as plain text, the wire carries the contracted statuses and header sets with no chunked framing, and the only console entry is Chrome's own report of the contracted 404 statuses, not an application error.
-- ⚠ **Never exercised at runtime** — the declared Node 18.0.0 floor line itself (all runs were on Node v22.23.3), and the generic `Cannot start server: <error.message>` listen-error branch, which has no natural trigger.
+- ✅ **Shutdown** — `CTRL+C`/`kill -INT` prints `Server shutting down`, releases the connections it holds, exits 0 and leaves the port free, including with an idle keep-alive connection held open and after 1 600 requests of load.
+- ✅ **Performance and memory** — 20 latency samples all under 10 ms (worst 0.000814 s), a 50-way concurrent burst answered in full with a responsive follow-up, and a resident set that climbs to a working level and holds rather than rising with request count.
+- ✅ **Browser surface** — both bodies render correctly as plain text, the wire carries the contracted statuses and header sets with no chunked framing, and the only console entry is Chrome's own report of the three non-2xx statuses, not an application error.
+- ⚠ **Never exercised at runtime** — the declared Node 18.0.0 floor line itself (all runs were on Node v22.23.3), and the generic `Cannot start server: <error.message>` listen-error branch, which has no natural trigger from the application's own surface.
 
 No integration was left undriven: the product has no outbound client, no database, no queue and no third-party service, so the runtime surface is the two routes, the three console lines and the process lifecycle, all of which were exercised.
 
@@ -135,55 +132,58 @@ No integration was left undriven: the product has no outbound client, no databas
 
 | Deliverable / Requirement Area | Benchmark | Verified Status | Progress |
 | --- | --- | --- | --- |
-| Both response contracts — `GET /hello` 200 `Hello world`; every other method-and-path pair 404 `Not Found` | Contract fidelity; exact-match routing with an explicit fallback | Verified against live instances and a browser: status, `Content-Type`, `Content-Length` and body byte-exact, method part of the match | ✅ Complete |
-| Request observability — one log line per request before routing, plus the startup and shutdown lines | Fixed output shapes; diagnostics on stderr only | Verified: 100% of logged requests conformed to `<ISO-8601 Z> <METHOD> <path>` in arrival order, stderr empty on every successful run | ✅ Complete |
-| Configuration surface — `PORT` read once, default `3000`, empty treated as unset, trimming, `1024`–`65535` | Documented behaviour matchable by a reader | Verified for the default, the empty and whitespace-only fallback, trimming, an override, both bounds and 11 refused shapes | ✅ Complete |
+| Both response contracts — `GET /hello` 200 `Hello world`; every other method-and-path pair 404 `Not Found` | Contract fidelity; exact-match routing with an explicit fallback | Verified against live instances and a browser: status, `Content-Type`, `Content-Length` and body byte-exact, with the method part of the match | ✅ Complete |
+| Request observability — one log line per request before routing, plus the startup and shutdown lines | Fixed output shapes; diagnostics on stderr only | Verified: 100% of logged requests conformed to `<ISO-8601 Z> <METHOD> <path>` in arrival order, the query string never logged, stderr empty on every successful run | ✅ Complete |
+| Configuration surface — `PORT` read once, default `3000`, empty treated as unset, trimming, `1024`–`65535` | Documented behaviour matchable by a reader | Verified for the default, the empty and whitespace-only fallback, trimming, an override, both bounds and nine refused shapes | ✅ Complete |
 | Failure handling — actionable message, nothing bound, exit 1 for invalid configuration and for a port in use | Actionable errors; graceful failure; no raw runtime dump | Verified: anchored stderr text, empty stdout, exit 1, incumbent instance unaffected | ✅ Complete |
-| Lifecycle — `CTRL+C` logs, releases connections and exits 0 | Deterministic clean shutdown at the declared runtime floor | Verified with an idle keep-alive connection held open; exit status 0 and the port released | ✅ Complete |
+| Lifecycle — `CTRL+C` logs, releases connections and exits 0 | Deterministic clean shutdown at the declared runtime floor | Verified with an idle keep-alive connection held open and after 1 600 requests of load; exit status 0 and the port released | ✅ Complete |
 | Manifest — seven agreed fields, exact values, no dependency section | Metadata fidelity; package-manager semantics | Verified by reading the key list and each value; `npm ls --all` reports an empty tree | ✅ Complete |
 | Zero dependencies — one built-in require, nothing to install | Minimalism mandate; checkable by inspection | Verified: `require('node:http')` is the only one, and the server runs on a host where nothing was ever installed | ✅ Complete |
-| Security boundaries — no evaluation, file-system access, outbound request or persistence; no internal detail in responses | Structural rather than defensive controls | Verified by inspection, by greps, by hostile-payload and raw-socket probes, and by reading both response bodies | ✅ Complete |
-| Performance obligations — sub-10 ms `/hello`, unblocked concurrency, stable memory | Measured obligations, not assertions | Verified: worst latency 0.000831 s, 50/50 concurrent bodies, resident set level across 2 000 requests | ✅ Complete |
-| Code quality — purpose-revealing names, one responsibility per function, reasoning-only comments, no dead code | Readability as the product's purpose | Verified: nine single-purpose functions, six comment blocks each carrying a decision the code cannot | ✅ Complete |
-| Documentation — ten sections, every command with the output it produces, quoted messages matching the code | Zero-knowledge readability | Verified section by section; the three supporting checks and two attribution clauses remain (2h, Section 2.2) | ✅ Complete, with a 2h follow-up |
-| Completeness — exactly the three agreed files, no placeholder, unreachable branch or unnamed artefact | Exhaustive deliverable set; no provisional content | Verified: the delivered tree holds exactly three tracked paths and no path beyond them was ever added; placeholder sweep empty; no test, CI, container, lockfile or configuration artefact | ✅ Complete |
+| Security boundaries — no evaluation, file-system access, outbound request or persistence; no internal detail in responses | Structural rather than defensive controls | Verified by inspection, by greps, by hostile-payload, raw-socket and large-body probes, and by reading both response bodies | ✅ Complete |
+| Performance obligations — sub-10 ms `/hello`, unblocked concurrency, stable memory | Measured obligations, not assertions | Verified: worst latency 0.000814 s, 50/50 concurrent bodies with a 200 follow-up, resident set at a working level across 1 500 requests | ✅ Complete |
+| Code quality — purpose-revealing names, one responsibility per function, reasoning-only comments, no dead code | Readability as the product's purpose | Verified: eight single-purpose functions, three constants and a frozen route table, five comment blocks each carrying a decision the code cannot, no unused declaration | ✅ Complete |
+| Documentation — ten sections, every command complete with the result it produces, quoted messages matching the code | Zero-knowledge readability | Verified section by section, including the syntax, placeholder, zero-dependency and boundary checks that reproduce the acceptance evidence; one quoted block is the agreed log-format example and is labelled as such | ✅ Complete, with a 1h sample refresh |
+| Completeness — exactly the three agreed files, no placeholder, unreachable branch or unnamed artefact | Exhaustive deliverable set; no provisional content | Verified: the deliverable set holds exactly three tracked paths at the repository root and no path beyond them; the placeholder sweep's only match is the line documenting it; no test, CI, container or lockfile artefact | ✅ Complete |
 
 ## 5.2 AAP & Rule Divergences and Gaps
 
 | # | What the AAP/Rule Required | What Was Delivered Instead | Why It Diverged | Impact | Remediation |
 | --- | --- | --- | --- | --- | --- |
-| 1 | The agreed concurrency check's counting command, `seq 1 50 \| xargs -P 50 -I{} curl -s …/hello \| grep -c '^Hello world$'`, expected to print `50` | `README.md:444` documents `… \| grep -o 'Hello world' \| wc -l`, and the runs verified concurrency by total byte count (550) and occurrence count | The fixed body has no trailing newline, so fifty concurrent bodies concatenate into one line and an anchored whole-line count can never print 50 for any correct implementation | None for the product; the documented command prints the expected `50`, while the agreed text would mislead anyone re-running it | None required. Align any internal acceptance checklist with the documented form when convenient |
-| 2 | `README.md` listed as a file to create, alongside `server.js` and `package.json` | Delivered as an in-place update over the repository's pre-existing two-line scaffold (`M README.md`, +478/−2) | The repository already carried a scaffold at that path, so its content was replaced rather than a new file created | None: the delivered document is complete and the scaffold's residue is gone | None |
-| 3 | Four ordered shutdown steps, read as a sequence: log, `server.close(callback)`, release tracked sockets, exit 0 from the callback | `server.js:106-116` destroys the tracked sockets immediately after calling `server.close(callback)`, before that callback runs | Releasing the sockets only from the callback could never release an idle keep-alive connection, so `CTRL+C` could hang instead of exiting 0 — the exit-status requirement outranks the step ordering | Connections are closed abruptly at shutdown instead of being drained; the exit is deterministic (status 0 in single-digit milliseconds, even with an idle connection held) | None. If connection draining is ever promised, the shutdown path and the README must change together |
-| 4 | The accepted port range and the privileged-port refusal documented in the README, with the three supporting checks (`node --check server.js`, the placeholder grep, the zero-dependency greps) part of the acceptance evidence | The range and refusal are documented; the three supporting checks are not named anywhere in `README.md`, though all three were executed and pass | The README's agreed content table fixes ten sections and names none of the three, so the document was kept to that content | Low: a reader cannot reproduce those three checks from the document, although nothing about the shipped behaviour depends on them | Add a short verification block to `README.md` (1h, Section 2.2) |
-| 5 | Quoted transcripts paired with complete prose about where each response header comes from | `README.md:153-154` quotes the application-set headers without naming the runtime as the source of `Content-Length`, and `README.md:152` names the `-S` flag without quoting that variant's line | The transcript is fixed by the agreement; the prose asserts nothing false, and quoting the `-S` variant's version- and port-dependent line would be brittle | Negligible: a reader must read two paragraphs together to get the complete header attribution | One clause each while editing the README for divergence 4 (covered by the same 1h task) |
+| 1 | The production-readiness sweep across the three files "produces no output" | The sweep is documented inside `README.md` section 10, so it matches its own documenting line: exactly one match, `README.md:544`, with `server.js` and `package.json` matching nothing and no second README line matching | The reader explicitly asked for the acceptance evidence to be documented in the README; documenting the check necessarily writes its pattern into the file it scans, so the two could not both hold literally and the reader's instruction won | None for the product: both code files are still proven free of provisional content | None. Keep the single self-match; a match in a code file, or a second `README.md` match, remains a genuine defect |
+| 2 | The agreed concurrency check counted anchored whole lines, `… \| grep -c '^Hello world$'`, expected to print `50` | `README.md` documents `… \| grep -o 'Hello world' \| wc -l`, and concurrency was verified by total byte count (550) and body count | The contracted body has no trailing newline, so fifty concurrent bodies concatenate into one line and an anchored whole-line count can never print `50` for any correct implementation | None for the product; a reader re-running the agreed text would see `0` and conclude the server was broken | None required. Align any internal acceptance checklist with the documented form when convenient |
+| 3 | `README.md` listed as a file to create, alongside `server.js` and `package.json` | Delivered as an in-place update over the repository's pre-existing two-line scaffold (`M README.md`, +478/−2 at the time) | The repository already carried a scaffold at that path from its initial commit, so its content was replaced rather than a new path created | None: the delivered document is complete and no section references the scaffold | None. A diff against the initial commit will show the two deleted scaffold lines |
+| 4 | Four ordered shutdown steps, read as a sequence: log, `server.close(callback)`, release tracked sockets, exit 0 from the callback | `server.js:106-116` destroys the tracked sockets immediately after calling `server.close(callback)`, before that callback runs | Releasing the sockets only from the callback could never release an idle keep-alive connection, so `CTRL+C` could hang instead of exiting 0 — the exit-status requirement outranks the step ordering | Connections close abruptly at shutdown instead of being drained; the exit is deterministic (status 0 in single-digit milliseconds, even with an idle connection held) | None. If connection draining is ever promised, the shutdown path and the README must change together |
+| 5 | The accepted port range and privileged-port refusal documented, with the gate reading "refuses to bind to privileged ports without explicit configuration" | Every value below 1024 is refused unconditionally; no override flag, second environment variable or configuration file exists | The request names no flag, second variable or configuration file, so providing an explicit-configuration path would invent an interface nothing asks for | A reader cannot bind a privileged port at all — the refusal is documented as behaviour in the Configuration section rather than an option to switch off | None |
+| 6 | `engines.node: ">=18.0.0"`, and the reader gate expects that floor to run the file | The floor is declared and the source stays inside 18.0.0 API surface, but every run was on Node v22.23.3 | The build environment admits no Node below its supported lines, and that restriction outranks the declared floor | The floor's support claim rests on API inspection plus behaviour on a newer line, not on an executed run | Run the file once on the oldest line you intend to advertise (2h, Section 2.2) |
 
-No user-specified rules accompany this project, so nothing in the delivery departs from a user rule. The five divergences above are departures from the agreed plan, not from user instructions.
+**Divergence 1 — the document now carries the sweep it describes.** The agreed contract fixed the production-readiness sweep as a three-file search whose result is nothing, and separately asked the README to reproduce the acceptance evidence. Writing that command into the README puts its own pattern into a file the command scans, so a literal "no output" and a documented check cannot coexist. The reader's instruction to document the evidence was taken as the higher source. The shipped shape is exactly one match — the documenting line at `README.md:544`, which the prose beside it explains and whose line number it presents as a stand-in — with `server.js` and `package.json` matching nothing. The consequence for you is a single line to expect: seeing it is correct, and seeing a second one, or any match in a code file, would indicate real provisional content. No action is required.
 
-**Divergence 1 — the concurrency counter.** The agreed command counts anchored whole lines, but the contracted body is exactly `Hello world` with no trailing newline — `Content-Length: 11` is fixed and quoted in the README, and a newline would make it 12. Fifty concurrent bodies arrive concatenated as one line, so `grep -c '^Hello world$'` returns `0` however correct the server is. Rather than publish a command that cannot succeed, `README.md:444` documents the faithful equivalent, `grep -o 'Hello world' | wc -l`, which prints `50` here; the property — fifty concurrent requests, none refused, each with the right body, and a responsive follow-up — was measured by total bytes (550 = 50 × 11), occurrence count and per-response capture.
+**Divergence 2 — the concurrency counter.** Counting anchored whole lines cannot work here: the body is exactly `Hello world` with `Content-Length: 11` fixed, so there is no trailing newline, and fifty concurrent bodies arrive concatenated on one line, making `grep -c '^Hello world$'` print `0` however healthy the server is. Rather than publish a command that cannot succeed, the README documents the faithful equivalent `grep -o 'Hello world' | wc -l`, which prints `50`, and the underlying property was measured three ways: fifty concurrent requests, none refused, 550 bytes of bodies, and a 200 follow-up. What remains for you is bookkeeping only — if an internal checklist still quotes the anchored form, update it so nobody reads a correct server as broken.
 
-**Divergence 2 — the README was updated in place, not created.** The plan describes all three deliverables as new files, which was true of `server.js` and `package.json`. The repository already carried a two-line placeholder `README.md` from its initial commit, so the delivered document replaced that content rather than creating a new path: the history shows `M README.md` (+478/−2) where the plan expected a creation. Nothing in the document depends on the scaffold and no section references it. Reviewing the branch, you will see the file as modified rather than added; no action follows, and any later diff against the base commit will include the two deleted lines.
+**Divergence 3 — the README was updated, not created.** The agreed file plan describes all three deliverables as new files, which was true of `server.js` and `package.json`. The repository already carried a two-line placeholder at `README.md` from its initial commit, so the delivered document replaced that content in place. Reviewing the branch you will see the file recorded as modified rather than added, and a diff against the first commit will include the two deleted scaffold lines. Nothing in the document depends on the scaffold, no section refers to it, and no reader-visible behaviour follows from the change — it is recorded so the history reads correctly when you compare the branch against its base.
 
-**Divergence 3 — the shutdown step order.** The plan describes four shutdown steps as a sequence — log, close the server, release the tracked sockets, exit from the close callback. `server.js:106-116` performs the third step immediately after calling `server.close(...)` rather than inside its callback, because `close()` completes only once every existing connection has ended: waiting for the callback to release the sockets would let an idle keep-alive connection hold the process open, so `CTRL+C` could hang instead of exiting `0`. The ordering that ships is what makes the exit deterministic at the declared runtime floor, where the runtime's own helpers for closing idle connections do not exist. Connections therefore close abruptly at shutdown rather than being drained.
+**Divergence 4 — the shutdown step order.** The agreed shutdown description lists four steps as a sequence, with the tracked sockets released from the `server.close()` callback. `server.js:106-116` performs that release immediately after calling `close()`, because `close()` completes only once every existing connection has ended: releasing the sockets from the callback would let an idle keep-alive connection hold the process open indefinitely, so `CTRL+C` could hang instead of exiting `0`. The ordering that ships is what makes the exit deterministic at the declared runtime floor, where the runtime's own helpers for closing idle connections do not exist. The trade-off is that connections close abruptly at shutdown rather than being drained; if draining is ever promised, the shutdown path and the README must change together.
 
-**Divergence 4 — the supporting checks are not documented.** Three checks that form part of the acceptance evidence — `node --check server.js`, the negative placeholder grep, and the zero-dependency greps (the single `require`, plus the absence of evaluation, file-system and outbound-network calls) — are not mentioned in `README.md`. They were executed against the delivered artefacts and all pass; they are absent because the README's agreed content table fixes ten sections and names none of them, so the document was held to that list. The cost falls on a reader reproducing the full evidence set from the document alone: they will find commands for both contracts, the port behaviour and the performance spot-checks, but not these three.
+**Divergence 5 — the privileged-port refusal has no override.** The agreed configuration gate reads "refuses to bind to privileged ports without explicit configuration", which presumes an explicit-configuration path exists. The request itself names no flag, no second environment variable and no configuration file, so none was invented: `resolvePortFromEnv` rejects every value below 1024 unconditionally, each with a message that states the reason and the accepted range, and `README.md`'s Configuration section documents that refusal as behaviour a reader can rely on rather than an option they can switch off. Nothing follows for you beyond knowing that port 80 cannot be bound by any supported route, which is the documented contract.
 
-**Divergence 5 — two attribution clauses.** Two prose points beside quoted transcripts are incomplete rather than wrong. `README.md:153-154` quotes the headers the application sets and names the runtime as the source of `Date`, `Connection` and `Keep-Alive`, but does not say that `Content-Length` is also computed by the runtime even though the quoted block shows it; the Testing section states this correctly a page later. Separately, `README.md:152` tells the reader to add `-S` to see curl's connection-failure line without quoting that line, deliberately: its literal text varies with curl version and port and would go stale. Both close with one clause each.
+**Divergence 6 — the declared floor has never been executed.** The agreed manifest fixes `engines.node: ">=18.0.0"` and expects the floor to run the file. It does not run in this build environment, which admits no Node below its supported lines, and that restriction outranks the declared floor, so every verification run was on Node v22.23.3. The source is deliberately confined to 18.0.0 API surface — one built-in require, and a shutdown path that releases its own sockets instead of calling the post-18 connection helpers — so the claim is well-founded but unproven by execution. Running the file once on the oldest line you intend to advertise closes it (2h, Section 2.2).
+
+No user-specified rules accompany this project, so nothing in the delivery departs from a user rule. The six divergences above are departures from the agreed plan or from the environment it assumed, not from user instructions.
 
 # 6. Risk Assessment
 
-Risks below are forward-looking: what could still go wrong once this code is used or extended. Every one of them is a property of the agreed scope or of the runtime the application sits on, not an open defect.
+Risks below are forward-looking: what could still go wrong once this code is used or extended. Every one is a property of the agreed scope, of the runtime the application sits on, or of a verification not yet taken — not an open defect.
 
 | Risk | Category | Severity | Probability | Mitigation | Status |
 | --- | --- | --- | --- | --- | --- |
-| No automated regression detection: the deliverable is three files with no suite, so an edit to `server.js` is checked only by re-running the documented commands by hand | Technical | Medium | High | Use the documented acceptance commands as a change checklist; keep the two contracts and the port-gate messages as the pass criteria | Accepted, inherent to the agreed scope |
-| The declared runtime floor (`engines.node: ">=18.0.0"`) is past end-of-life, and the floor line has never been executed here | Operational | Medium | High | Run the file once on the oldest line you intend to support before advertising it; raise the declared floor when the tutorial is next revised | Open — 2h verification task in Section 2.2 |
+| No automated regression detection: the deliverable is three files with no suite, so an edit to `server.js` is checked only by re-running the documented commands by hand | Technical | Medium | High | Use the documented acceptance commands as a change checklist; keep the two contracts, the log shape and the port-gate messages as the pass criteria | Accepted, inherent to the agreed scope |
+| The declared runtime floor (`engines.node: ">=18.0.0"`) is past end-of-life, and that line has never been executed here | Operational | Medium | High | Run the file once on the oldest line you intend to support before advertising it; raise the declared floor when the tutorial is next revised | Open — 2h verification task in Section 2.2 |
 | No authentication, TLS, rate limiting or security headers, and the listener binds every interface | Security | Medium | Medium | Run it for its intended teaching purpose on a local or trusted network, or place it behind infrastructure that supplies those layers | Accepted by design; a deployment decision, not a code gap |
-| Working-set growth under large request bodies: repeated multi-megabyte uploads that are never read push resident memory from roughly 60 MB to roughly 80 MB and the runtime does not return those pages to the OS | Technical | Low | Medium | Bounded and self-limiting (flat across consecutive large requests); if uploads are expected, terminate them at a proxy rather than adding body handling the contract forbids | Accepted; measured and bounded |
-| Console output integrity: the request log carries the full path, so a client can drive up to about 16 KB of stdout per request, and an operator-supplied `PORT` value is echoed to stderr verbatim | Operational | Low | Medium | Treat stdout and stderr as untrusted text in any downstream parsing; the parser's header limit bounds the per-line cost | Accepted; format is contracted |
+| Working-set growth under large request bodies: repeated multi-megabyte uploads that are never read push resident memory from roughly 60 MB to roughly 80 MB, and the runtime does not return those pages to the OS | Technical | Low | Medium | Bounded and self-limiting (flat across consecutive large requests); if uploads are expected, terminate them at a proxy rather than adding body handling the contract forbids | Accepted; measured and bounded |
+| The request log is not a complete access record: requests the runtime refuses before the handler (malformed request lines, unknown method tokens, oversized targets or headers) produce no application log line | Operational | Low | Medium | Know the boundary when reading the log or writing a client; only requests the runtime accepts appear in it | Accepted; runtime-provided HTTP framing |
+| Console output integrity: the log carries the full path, so a client can drive up to about 16 KB of stdout per request, and an operator-supplied `PORT` value is echoed to stderr verbatim | Operational | Low | Medium | Treat stdout and stderr as untrusted text in any downstream parsing; the parser's header limit bounds the per-line cost | Accepted; format is contracted |
 | Unbounded connection tracking: the tracked socket set grows with concurrently open connections, with no connection or timeout limits configured | Technical | Low | Low | Sound at the declared scale (single host, tens of connections); the runtime's own idle timeout and the host's descriptor limit are the practical bounds | Accepted; scale is out of the agreed scope |
-| Transport-layer behaviour belongs to the runtime: unknown method tokens and malformed request lines are answered `400`/`431` before the application sees them and produce no log line, half-open connections are held to the runtime's own header timeout, and `HEAD` or HTTP/1.0 responses carry no `Content-Length` | Integration | Low | Medium | Know the boundary when writing a client: only requests the runtime accepts reach the catch-all; do not read the request log as a complete access record | Accepted; runtime-provided HTTP |
-| Port contention with the documented literals: the README's self-contained commands each start their own server on port `3000`, so a reader whose own server is already running meets the in-use message instead of the quoted transcript | Integration | Low | Medium | Documented remedy is the `PORT` override; one sentence telling the reader to stop the running server first removes the inference | Open — covered by the 1h documentation task in Section 2.2 |
+| The documented literal ports (`3000`, `4000`) may be occupied on a reader's machine, so a walkthrough shows the bind-failure message instead of the quoted startup line | Integration | Low | Medium | The documented remedy is the `PORT` override, and the README names the port as the part that varies between hosts | Accepted; documented, with the remedy quoted |
 
 # 7. Visual Project Status
 
@@ -191,9 +191,9 @@ Project hours, split between the work that is complete and the work that remains
 
 ```mermaid
 %%{init: {"themeVariables": {"pie1": "#5B39F3", "pie2": "#FFFFFF", "pieStrokeColor": "#B23AF2", "pieOuterStrokeColor": "#B23AF2", "pieTitleTextColor": "#B23AF2"}}}%%
-pie title Project Hours Breakdown — 87.0% complete
-    "Completed Work" : 40
-    "Remaining Work" : 6
+pie title Project Hours Breakdown — 91.3% complete
+    "Completed Work" : 42
+    "Remaining Work" : 4
 ```
 
 Remaining hours by category, as listed in Section 2.2:
@@ -202,37 +202,33 @@ Remaining hours by category, as listed in Section 2.2:
 %%{init: {"themeVariables": {"xyChart": {"plotColorPalette": "#5B39F3"}}}}%%
 xychart-beta
     title "Remaining Hours by Category"
-    x-axis [Floor, Failure, Checks, Prose, Samples]
+    x-axis [Floor, Failure, Samples]
     y-axis "Hours" 0 --> 2.5
-    bar [2.0, 1.0, 1.0, 1.0, 1.0]
+    bar [2.0, 1.0, 1.0]
 ```
 
 | Remaining Category (Section 2.2) | Hours | Priority |
 | --- | --- | --- |
 | Runtime floor verification | 2.0 | Medium |
 | Failure-path verification | 1.0 | Medium |
-| Supporting checks documented | 1.0 | Low |
-| Attribution prose and stop-first note | 1.0 | Low |
 | Measurement refresh | 1.0 | Low |
-| **Total Remaining** | **6.0** | — |
+| **Total Remaining** | **4.0** | — |
 
-**Completed Work = 40 hours** and **Remaining Work = 6 hours**, matching the metrics table in Section 1.2 and the totals in Sections 2.1 and 2.2. The completion figure these charts display is **87.0%** — 40 ÷ 46 × 100.
+**Completed Work = 42 hours** and **Remaining Work = 4 hours**, matching the metrics table in Section 1.2 and the totals in Sections 2.1 and 2.2. The completion figure these charts display is **91.3%** — 42 ÷ 46 × 100.
 
 # 8. Summary & Recommendations
 
-**What was delivered and verified.** A complete, runnable teaching server in three files: `server.js` with the frozen route table, both handlers, a single response writer, request logging, port resolution and validation, the two fatal failure paths and a deterministic `CTRL+C` shutdown; `package.json` with exactly the seven agreed fields and no dependency section; and a ten-section `README.md` whose every command is paired with the output it produces. Everything the project promises was exercised on live instances: both contracts byte-exact over `curl` and in a browser, log lines conforming one per request in arrival order, the default and empty-valued port behaviour, both accepted bounds, eleven refused shapes, the port-in-use report, the clean exit status, sub-10 ms latency, a fifty-way concurrent burst, a level resident set across two thousand requests, and the static and boundary checks that prove the file evaluates nothing, touches no file system, makes no outbound request and stores nothing. **87 checks executed, none failed.**
+**What was delivered and verified.** A complete, runnable teaching server in three files: `server.js` with the frozen route table, both handlers, a single response writer, request logging, port resolution and validation, the two fatal failure paths and a deterministic `CTRL+C` shutdown; `package.json` with exactly the seven agreed fields and no dependency section; and a ten-section `README.md` whose every command is paired with the output it produces, its acceptance evidence included. Everything the project promises was exercised on live instances: both contracts byte-exact over `curl` and in a browser, log lines conforming one per request in arrival order, the default and empty-valued port behaviour, both accepted bounds, nine refused shapes, the port-in-use report, the clean exit status, sub-10 ms latency, a fifty-way concurrent burst, a resident set that settles at a working level, and the static, dependency and boundary checks that prove the file evaluates nothing, touches no file system, makes no outbound request and stores nothing. **85 checks executed, none failed.**
 
-**Where the project stands.** The agreed work is **87.0% complete** — 40 of 46 hours delivered, 6 remaining. All 36 scoped requirements are met as written, with two of them carrying verification that has not yet been taken, and the twelve compliance areas in Section 5.1 pass, one of them with a small documentation follow-up. The remaining hours are not missing functionality: 3 of the 6 are verification (executing the declared Node 18.0.0 floor line and exercising the generic listen-error branch, which has no natural trigger) and 3 are documentation completeness and a measurement refresh. Nothing on the list changes behaviour; all of it changes what a reader or reviewer can see for themselves.
+**Where the project stands.** The agreed work is **91.3% complete** — 42 of 46 hours delivered, 4 remaining. Every scoped requirement is met as written: two carry verification that has not yet been taken and one carries a measurement refresh, and the twelve compliance areas in Section 5.1 pass. The remaining hours are not missing functionality: 3 of the 4 are verification (executing the declared Node 18.0.0 floor line, and exercising the generic listen-error branch, which has no natural trigger) and 1 is refreshing the document's quoted latency and resident-set samples on an idle host. Nothing on the list changes behaviour; all of it changes what a reader or reviewer can see for themselves.
 
-**The critical path to production.** The code is ready to run as it stands — start it with `node server.js` or `npm start` on any Node 18-or-newer host and both contracts answer immediately, with nothing to install and nothing to configure beyond `PORT`. Before publishing or teaching from it, close the remaining items in this order: confirm the floor line you intend to advertise actually runs the file (2h), exercise the generic listen-error branch (1h), add the three supporting checks and the two attribution clauses to the README (2h), and refresh the quoted latency and memory samples on an idle host (1h). None of these blocks a reader from using the server today.
+**The critical path to production.** The code is ready to run as it stands — start it with `node server.js` or `npm start` on any Node 18-or-newer host and both contracts answer immediately, with nothing to install and nothing to configure beyond `PORT`. Before publishing or teaching from it, close the remaining items in this order: confirm that the floor line you intend to advertise actually runs the file (2h), exercise the generic listen-error branch (1h), and refresh the quoted samples on an idle host (1h). None of these blocks a reader from using the server today.
 
 **Accepted by design, and worth deciding deliberately.** Five properties are absences the agreed scope specifies rather than gaps: no automated test suite (so a future edit is covered only by re-running the documented commands), no authentication, TLS, rate limiting or security headers (with the listener bound to every interface), no persistence or static files, no CI, container or deployment automation, and no connection or timeout tuning. Each was verified as a deliberate condition of the three-file deliverable. If this tutorial is ever placed somewhere other than a local or trusted network, the security set is the first thing to add — and the first four are exactly the layers a real service would need around it.
 
-**Success metrics.** Both response contracts answer byte-exactly with determinate framing (no chunked encoding) over `curl` and in a browser; one conforming log line per request with an empty stderr; the port gate accepts 1024–65535, defaults to 3000 for an unset or empty value, and refuses eleven invalid shapes with actionable text and exit 1; a port already in use is reported without disturbing the incumbent; `CTRL+C` exits 0 with the port released; latency stays under 10 ms and memory levels off after warm-up; and the tracked deliverable set is exactly the three agreed files with zero third-party dependencies. Every one of those metrics was observed on this build, and the commands that reproduce them are in Section 9.
+**Success metrics.** Both response contracts answer byte-exactly with determinate framing (no chunked encoding) over `curl` and in a browser; one conforming log line per accepted request with an empty stderr; the port gate accepts 1024–65535, defaults to 3000 for an unset or empty value, and refuses nine invalid shapes with actionable text and exit 1; a port already in use is reported without disturbing the incumbent; `CTRL+C` exits 0 with the port released; latency stays under 10 ms and memory levels off after warm-up; the repository holds exactly the three agreed files with zero third-party dependencies; and each acceptance check is documented with the result it produces. Every one of those metrics was observed on this build, and the commands that reproduce them are in Section 9.
 
 # 9. Development Guide
-
-Every command below was run from the repository root on this build. Substitute any free port for `4000` if the examples clash with something already listening.
 
 ## 9.1 System Prerequisites
 
@@ -252,8 +248,10 @@ npm --version     # only if you plan to use npm start
 
 ```bash
 cd /path/to/your/checkout     # the repository root is the working directory every command assumes
-ls                            # expect exactly README.md, package.json, server.js
+ls                            # expect README.md, package.json and server.js
 ```
+
+A `blitzy/` directory may also be present in the checkout: it holds generated project documentation and is not part of the deliverable, so nothing in this guide reads or writes it.
 
 There is no virtual environment, no `.env` file, no secret and no configuration file. The single configuration input is the `PORT` environment variable, read once at startup. It can be set inline, exported, or left unset:
 
@@ -354,7 +352,7 @@ Content-Length: 9
 Not Found
 ```
 
-A live `curl -i` also prints the runtime's own `Date`, `Connection` and `Keep-Alive` headers around those lines; the application sets only `Content-Type` and the status code, and the runtime computes `Content-Length`. Check the method is part of the match, the query string is stripped and percent-encoding is left undecoded:
+A live `curl -i` also prints the runtime's own `Date`, `Connection` and `Keep-Alive` headers around those lines; the application sets only `Content-Type` and the status code, and the runtime computes `Content-Length`. Note that `curl` also prints its own progress meter whenever it writes the body somewhere other than your terminal (a pipe, a file or `/dev/null`); the meter comes from `curl`, not from the server, and `-s` removes it along with curl's error text. Check that the method is part of the match, the query string is stripped and percent-encoding is left undecoded:
 
 ```bash
 curl -i -X POST http://localhost:3000/hello   # 404 Not Found
@@ -362,12 +360,13 @@ curl -i http://localhost:3000/hello?x=1       # 200 Hello world
 curl -i http://localhost:3000/%68ello         # 404 Not Found
 ```
 
-**Request logging.** Read the terminal (or the log file) after the requests above. Each request produced exactly one line, in arrival order, in this shape:
+**Request logging.** Read the terminal (or the log file) after the requests above. Each accepted request produced exactly one line, in arrival order, in this shape — and the logged path never carries a query string:
 
 ```text
-2026-10-17T00:01:34.218Z GET /hello
-2026-10-17T00:01:34.225Z GET /invalid
-2026-10-17T00:01:34.231Z POST /hello
+2026-10-17T07:23:54.401Z GET /hello
+2026-10-17T07:23:54.409Z GET /invalid
+2026-10-17T07:23:54.414Z POST /hello
+2026-10-17T07:23:54.420Z GET /hello
 ```
 
 **The port gate.** The default, the empty-value fallback and the accepted range:
@@ -383,7 +382,7 @@ PORT=65535 node server.js                # binds the highest accepted port
 Every other shape is refused before `listen()` is ever called, with the offending value quoted back and exit status 1:
 
 ```bash
-for v in abc 3.5 0 80 65536 1e3 +80 -1 0x50 1023; do PORT="$v" node server.js; echo "exit=$?"; done
+for v in abc 3.5 1e3 0 80 65536 1023; do PORT="$v" node server.js; echo "exit=$?"; done
 ```
 
 ```text
@@ -391,15 +390,19 @@ Invalid PORT value "abc": PORT must be a whole number between 1024 and 65535.
 exit=1
 Invalid PORT value "3.5": PORT must be a whole number between 1024 and 65535.
 exit=1
+Invalid PORT value "1e3": PORT must be a whole number between 1024 and 65535.
+exit=1
 Invalid PORT value "0": port 0 would let the operating system choose a port; choose a port between 1024 and 65535.
 exit=1
 Invalid PORT value "80": ports below 1024 are privileged and cannot be bound; choose a port between 1024 and 65535.
 exit=1
 Invalid PORT value "65536": PORT must be between 1024 and 65535.
 exit=1
+Invalid PORT value "1023": ports below 1024 are privileged and cannot be bound; choose a port between 1024 and 65535.
+exit=1
 ```
 
-`PORT=1e3`, `PORT=+80`, `PORT=-1` and `PORT=0x50` take the whole-number message; `PORT=1023` takes the privileged-port message. Ports below 1024 are always refused — there is no override flag, second variable or configuration file that can allow them.
+Ports below 1024 are always refused — there is no override flag, second variable or configuration file that can allow them.
 
 **A port already in use.** Start a second instance while the first one holds its port:
 
@@ -434,12 +437,14 @@ for i in $(seq 1 20); do curl -s -o /dev/null -w '%{time_total}\n' http://localh
 ```
 
 ```text
-0.000820
-0.000866
+0.000601
+0.000593
+0.000470
 ...
+0.000258
 ```
 
-Fifty concurrent requests each return the body, and the server answers a follow-up request immediately. Count the bodies rather than the lines — they arrive without a trailing newline:
+The worst value of that run was 0.000775 s, and the samples settle once the connection is warm. Fifty concurrent requests each return the body, and the server answers a follow-up request immediately. Count the bodies rather than the lines — they arrive without a trailing newline:
 
 ```bash
 seq 1 50 | xargs -P 50 -I{} curl -s http://localhost:3000/hello | grep -o 'Hello world' | wc -l   # 50
@@ -449,30 +454,41 @@ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:3000/hello            
 Memory stays level rather than growing with request count:
 
 ```bash
-node server.js & SRV=$!; sleep 1; for i in $(seq 1 100); do curl -s -o /dev/null http://localhost:3000/hello; done
-BEFORE=$(ps -o rss= -p $SRV); for i in $(seq 1 1000); do curl -s -o /dev/null http://localhost:3000/hello; done
-MID=$(ps -o rss= -p $SRV); for i in $(seq 1 1000); do curl -s -o /dev/null http://localhost:3000/hello; done
-echo "$BEFORE $MID $(ps -o rss= -p $SRV)"; kill -INT $SRV
+node server.js & SRV=$!; sleep 1
+BEFORE=$(ps -o rss= -p $SRV); for i in $(seq 1 500); do curl -s -o /dev/null http://localhost:3000/hello; done
+MID=$(ps -o rss= -p $SRV); for i in $(seq 1 500); do curl -s -o /dev/null http://localhost:3000/hello; done
+THIRD=$(ps -o rss= -p $SRV); for i in $(seq 1 500); do curl -s -o /dev/null http://localhost:3000/hello; done
+echo "$BEFORE $MID $THIRD $(ps -o rss= -p $SRV)"; kill -INT $SRV
 ```
 
 ```text
-56724 58952 58876
+56672 57960 58768 58020
 ```
 
-A bounded rise of a few megabytes during warm-up is normal and the values then flatten; the check is that they do not rise with the request count.
+A bounded rise of a few percent during warm-up is normal and the values then settle; the check is that they do not rise with the request count.
 
 **Static and boundary checks.** Each of these is a complete check in itself:
 
 ```bash
 node --check server.js                                     # exit 0, nothing printed
 node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"   # silent, exit 0
-grep -n "require(" server.js                               # only node:http
-grep -nE "eval\(|new Function|require\('vm'\)" server.js    # no output
-grep -nE "require\('(node:)?fs" server.js                   # no output
-grep -nE "http\.request|https|fetch\(|net\.connect|dns" server.js   # no output
-grep -nEi "TODO|FIXME|XXX|placeholder|not implemented|coming soon" server.js package.json README.md   # no output
-git ls-files                                               # README.md, package.json, server.js
+grep -n "require(" server.js                               # the single built-in require
+grep -nE "eval\(|new Function|require\('vm'\)" server.js    # no output, exit 1
+grep -nE "require\('(node:)?fs" server.js                   # no output, exit 1
+grep -nE "http\.request|https|fetch\(|net\.connect|dns" server.js   # no output, exit 1
+grep -nEi "TODO|FIXME|XXX|placeholder|not implemented|coming soon" server.js package.json README.md
+git ls-files
 ```
+
+```text
+10:const http = require('node:http');
+README.md:544:grep -nEi "TODO|FIXME|XXX|placeholder|not implemented|coming soon" server.js package.json README.md
+README.md
+package.json
+server.js
+```
+
+The sweep's single match is the documenting line itself, which is why the README quotes its result with the pattern and the line number stood in for; `server.js` and `package.json` match nothing. A second match, or any match in a code file, would mean provisional content survived.
 
 ## 9.6 Example Usage
 
@@ -496,9 +512,9 @@ The first terminal now shows one log line per request:
 
 ```text
 Server listening on port 3000
-2026-10-17T00:01:34.218Z GET /hello
-2026-10-17T00:01:34.225Z GET /invalid
-2026-10-17T00:01:34.231Z POST /hello
+2026-10-17T07:23:54.401Z GET /hello
+2026-10-17T07:23:54.409Z GET /invalid
+2026-10-17T07:23:54.414Z POST /hello
 ```
 
 Run it on another port instead, and stop it with `CTRL+C`:
@@ -519,14 +535,15 @@ Adding a route is one entry in the frozen `ROUTES` table plus one handler functi
 | --- | --- | --- |
 | `Cannot start server: port 3000 is already in use. …` | Another process holds the port | Stop that process, or start this one with `PORT=4000 node server.js` |
 | `Invalid PORT value "…": …` and exit 1 | The value is not a whole decimal number in `1024`–`65535`, or it is a privileged port | Use a value in range; `PORT=` (empty) and surrounding whitespace are accepted and mean the default |
-| The server prints the full `EADDRINUSE` help text after `npm start` and exits 1 | Either an existing instance is running, or a self-contained README command started one on the same port | Stop the running server first, or use a fresh terminal and a free `PORT` |
+| The server prints the full `EADDRINUSE` help text after `npm start` and exits 1 | Either an existing instance is running, or a self-contained command in the README started one on the same port | Stop the running server first, or use a fresh terminal and a free `PORT` |
 | `Error: Cannot find module '/path/server.js'` | The command was run from outside the repository root | `cd` to the repository root and run it again |
 | `curl` prints `000` for a probe | Nothing is listening on that port (this is `%{http_code}`'s value on a connection refusal; `curl` also exits 7 and `-s` hides its message — add `-S` to see it) | Check the port the server reports in its startup line |
+| `curl` prints a `% Total % Received % Xferd` progress meter | The response body went to a pipe, a file or `/dev/null` rather than your terminal | Expected: the meter is curl's own output; add `-s` to remove it |
 | You see extra lines above the startup line after `npm start` | npm prints its own script banner before running `node server.js` | Expected: the blank line, `> nodejs-tutorial-hello-world@1.0.0 start` and `> node server.js` come from npm; `Server listening on port …` is the server's own line |
-| A browser shows `Failed to load resource … 404` for `/favicon.ico` | Chrome probes for a favicon and the catch-all answers 404 | Expected; the application ships no assets |
+| A browser shows `Failed to load resource … 404` for `/favicon.ico` | Chrome probes for a favicon and the catch-all answers 404 | Expected; the application ships no assets, and the console entry is the browser's own status report |
 | An untracked `package-lock.json` appears | `npm install` was run | Delete it; the project needs no install step |
 | The server is unreachable from another machine | Nothing is wrong with the code, but the listener binds every interface and there is no authentication or TLS | Treat it as a local teaching server or put it behind infrastructure that supplies those layers |
-| A long-lived run shows resident memory rising a few megabytes then flattening | V8 warms its heap before it stabilises | Expected; re-sample after more traffic — the check is that the values do not rise with the request count |
+| A long-lived run shows resident memory rising a few percent then flattening | The runtime warms its heap before it stabilises | Expected; re-sample after more traffic — the check is that the values do not rise with the request count |
 
 # 10. Appendices
 
@@ -543,10 +560,18 @@ Adding a route is one entry in the frozen `ROUTES` table plus one handler functi
 | `curl -i -X POST http://localhost:3000/hello` | Method participates in the match | 404, `Not Found` |
 | `kill -INT <pid>` | Same signal as `CTRL+C` | `Server shutting down`, exit status 0 |
 | `node --check server.js` | Syntax check | Exit 0, no output |
+| `node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"` | Manifest syntax check | Exit 0, no output |
 | `npm ls --all` | Dependency inventory | Project line, then `(empty)` |
 | `node -e "const p=require('./package.json');console.log(Object.keys(p).join(','))"` | Manifest field names | `name,version,description,main,scripts,engines,keywords` |
-| `ps -o rss= -p <pid>` | Resident set size in 1024-byte units | Three samples that do not rise with request count |
+| `node -e "const p=require('./package.json');console.log(Object.keys(p.dependencies||{}).length,Object.keys(p.devDependencies||{}).length)"` | Declared dependency count | `0 0` |
+| `grep -n "require(" server.js` | Source dependency check | `10:const http = require('node:http');` |
+| `grep -nEi "eval\(\|new Function\|require\('vm'\)" server.js` | Dynamic-evaluation boundary | No output, exit 1 |
+| `grep -nE "require\('(node:)?fs" server.js` | File-system boundary | No output, exit 1 |
+| `grep -nE "http\.request\|https\|fetch(\|net\.connect\|dns" server.js` | Outbound-client boundary | No output, exit 1 |
+| `grep -nEi "TODO\|FIXME\|XXX\|placeholder\|not implemented\|coming soon" server.js package.json README.md` | Provisional-content sweep | One match — the documenting line in `README.md` — and nothing in either code file |
+| `ps -o rss= -p <pid>` | Resident set size in 1024-byte units | Samples that do not rise with request count |
 | `seq 1 50 \| xargs -P 50 -I{} curl -s http://localhost:3000/hello \| grep -o 'Hello world' \| wc -l` | Concurrency check | `50` |
+| `git ls-files` | Tracked deliverable set | `README.md`, `package.json`, `server.js` |
 
 ## Appendix B. Port Reference
 
@@ -565,7 +590,7 @@ Adding a route is one entry in the frozen `ROUTES` table plus one handler functi
 | --- | --- |
 | `server.js` | The whole application: constants, response writer, request logger, both handlers, the frozen `ROUTES` table, the request pipeline, port resolution and validation, the startup error listener, the `SIGINT` shutdown path and the guarded entry call |
 | `package.json` | Name, version, description, main, start script, engines floor and keywords — seven fields, no dependency section |
-| `README.md` | Purpose, prerequisites, installation, running, configuration, testing, expected output, request logging, stopping, and the project structure with the latency check |
+| `README.md` | Purpose, prerequisites, installation, running, configuration, testing, expected output, request logging, stopping, and the project structure with the acceptance and performance checks |
 
 ## Appendix D. Technology Versions
 
@@ -575,6 +600,7 @@ Adding a route is one entry in the frozen `ROUTES` table plus one handler functi
 | npm | 11.21.0 | Used only for `npm start` and the dependency inventory |
 | HTTP | 1.1 | Provided by `node:http`; HTTP/1.0 clients receive connection-close framing without `Content-Length` |
 | Third-party packages | None | The single `require` is `node:http` |
+| curl | 8.14.1 | The verification client; `-s` removes its progress meter and its error text |
 
 ## Appendix E. Environment Variable Reference
 
@@ -591,7 +617,7 @@ Adding a route is one entry in the frozen `ROUTES` table plus one handler functi
 | `curl` | Exercises both contracts and the latency, override and status-code probes |
 | `seq` / `xargs` | Issues concurrent requests without adding a load-testing dependency |
 | `ps` | Samples the process's resident set for the memory check |
-| `grep` | Runs the boundary and placeholder checks (`require(`, evaluation, file-system, outbound client, placeholder tokens) |
+| `grep` | Runs the boundary, dependency and provisional-content checks |
 | `git` | Confirms the tracked set is exactly the three deliverables (`git ls-files`) |
 
 ## Appendix G. Glossary
