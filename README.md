@@ -29,9 +29,11 @@ v22.23.3
 
 That transcript is the output of the command above, taken on the machine this document was written
 from. Every quoted line in this document comes the same way, from a run of the finished server or
-of one of the commands shown in it. The version itself varies from one machine to the next, so
-compare yours with the floor: any version from 18.0.0 upwards is acceptable. The shape does not
-vary — a `v` followed by three numbers separated by dots — and it is that shape, not the sample
+of one of the commands shown in it, with one exception: the log-format example in the Request
+logging section is the shape a line carries rather than a line a run produced, its timestamp
+standing in for the moment a request arrived. The version itself varies from one machine to the
+next, so compare yours with the floor: any version from 18.0.0 upwards is acceptable. The shape does
+not vary — a `v` followed by three numbers separated by dots — and it is that shape, not the sample
 value, that the comparison reads.
 
 The floor is declared in `package.json` as `engines.node: ">=18.0.0"`. npm treats `engines` as
@@ -415,10 +417,10 @@ method and the request path, separated by single spaces:
 2025-01-01T00:00:00.000Z GET /hello
 ```
 
-That line is the log format itself, written by a request for `/hello` against a running server. The
-timestamp is an example value in the shape every line carries — a real line carries the UTC time the
-request arrived in that position, taken from `new Date().toISOString()`, which is always UTC and ends in
-`Z`. What varies between runs and hosts is the timestamp and the path; the field order, the single spaces
+That line is the log format itself, shown with an example timestamp in the position every line carries a
+real one. A line a request writes carries the UTC time the request arrived there, taken from
+`new Date().toISOString()`, which is always UTC and ends in `Z`.
+What varies between runs and hosts is the timestamp and the path; the field order, the single spaces
 between the three fields and the fact that the method is the one the client sent do not. The path
 logged is the same string routing matched on, so a request for `/hello?x=1` is logged with the
 query string already stripped:
@@ -507,10 +509,11 @@ The checks in this part of the section are ordinary shell commands — `node --c
 of the manifest, `npm ls`, `grep` and the shell's own `; echo "exit=$?"` — using tools that are
 already present on any developer host with Node.js installed. None of them is a dependency of the
 project, nothing is installed in order to run them, and the server still starts on a host where
-`npm install` has never been run for it. Each check is the command in the `bash` block and the output
-it produced in the `text` block beneath it; where a command prints nothing, that block records the
-silence and the exit status instead, which you can also see for yourself by running the command as
-`<command>; echo "exit=$?"`.
+`npm install` has never been run for it. Each check is the command in the `bash` block followed by the
+`text` block quoting its result, and each result is quoted as a run produced it — abridged or elided
+only where the text beside the block says so, as it does for two blocks below. Where a command prints
+nothing, that block records the silence and the exit status instead, which you can also see for
+yourself by running the command as `<command>; echo "exit=$?"`.
 
 `node --check` parses `server.js` without executing it, so a syntax error is reported before the
 server is started:
