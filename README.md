@@ -356,9 +356,16 @@ Two related behaviours are worth knowing. A query string is never part of a rout
 Percent-encoded paths are deliberately not decoded, so `curl -i http://localhost:3000/%68ello`
 returns `404` and `Not Found`; matching is exact and literal.
 
-`curl` also writes a progress meter to the terminal while each of these requests runs, and that meter
-comes from `curl` rather than from the server; the transcripts above quote the response itself, so add
-`-s` to a command when you want the response on its own.
+`curl` shows a progress meter by default and suppresses it whenever it writes the response body to the
+terminal, because the meter and the body would otherwise be interleaved in one stream. Every command
+above writes its body to the terminal, so all four show the response on its own, as the transcripts
+quote it.
+
+The meter appears when the body goes anywhere other than the terminal — to a file, to a pipe or to
+`/dev/null`. It is `curl`'s own output rather than the server's, as are the messages `curl` prints when
+a request fails, so `-s` is what removes it: add `-s` when you want neither the meter on a redirected
+run nor the error text on a failed one. Nothing the meter or an error message shows comes from the
+server.
 
 ## Expected output
 
