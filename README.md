@@ -575,8 +575,9 @@ node -e "const p=require('./package.json');console.log(Object.keys(p.dependencie
 ```
 
 The two zeroes are those counts, `dependencies` first and `devDependencies` second, so a declared
-package would show up here as a non-zero number. The command exits `0`. The same field names are
-visible in the key list printed earlier in this section, which is seven keys long.
+package would show up here as a non-zero number. The command exits `0`. Neither field name appears in
+the key list printed earlier in this section: that list holds the seven keys above, and a
+`dependencies` or `devDependencies` section would add an eighth entry to it.
 
 `npm ls --all` prints the whole dependency tree, so an installed package would appear as a line under
 the project rather than as `(empty)`:
@@ -742,8 +743,8 @@ they appear in — and how long the burst takes to finish.
 
 ### Memory under repeated requests
 
-Memory does not grow with the request count, so the process stays at a stable size however long it
-serves:
+Memory does not grow with the request count: the process climbs to a working level over the first
+few thousand requests and then holds it however long it serves:
 
 ```bash
 node server.js & SRV=$!; sleep 1; for i in $(seq 1 100); do curl -s -o /dev/null http://localhost:3000/hello; done; BEFORE=$(ps -o rss= -p $SRV); for i in $(seq 1 1000); do curl -s -o /dev/null http://localhost:3000/hello; done; MID=$(ps -o rss= -p $SRV); for i in $(seq 1 1000); do curl -s -o /dev/null http://localhost:3000/hello; done; AFTER=$(ps -o rss= -p $SRV); echo "$BEFORE $MID $AFTER"; kill -INT $SRV
@@ -759,8 +760,12 @@ The three numbers are the resident set size of the server process in 1024-byte u
 a short warm-up and then after each of two rounds of a thousand requests, so they measure the process
 rather than the traffic. They differ from one machine to the next and from one run to the next, and
 the Node.js version moves them too: the sample above is one run on a Linux host running Node.js
-`v22.23.3`, the version the Prerequisites section has `node --version` report. The check is that they
-do not rise with the request count, and the last two readings here agree within a fraction of a
+`v22.23.3`, the version the Prerequisites section has `node --version` report. The check is that the
+readings do not rise with the request count, and the shape a longer run shows is a climb followed by
+a plateau: the process climbs several percent above its warm-up value over the first few thousand
+requests and then holds that level. Three samples taken during the climb can therefore still be
+rising when the command finishes, so repeat its two thousand-request rounds a few times if you want
+to watch the level settle. In the sample above the last two readings agree within a fraction of a
 percent, which is what a stable size looks like. The block above is abridged in one respect — the
 command writes one request log line per request to the same terminal, so the 2,100 lines that appear
 between the startup line and the three readings are left out of it, while
